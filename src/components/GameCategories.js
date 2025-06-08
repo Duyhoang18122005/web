@@ -1,6 +1,19 @@
-import React from "react";
+import { useEffect, useState } from 'react';
+import { GetGame } from '../data/call_api/CallApiGame';
+function GameCategories() {
+  const [games, setGames] = useState([]);
 
-function GameCategories({ games }) {
+  useEffect(() => {
+    GetGame((err, data) => {
+      if (err) {
+        console.error("Lỗi khi lấy game:", err);
+      } else {
+        console.log("Dữ liệu từ API:", data);
+        setGames(data);
+      }
+    });
+  }, []);
+
   return (
     <section className="mb-12">
       <h2 className="text-2xl font-bold mb-6 flex items-center">
@@ -18,7 +31,7 @@ function GameCategories({ games }) {
             </div>
             <h3 className="font-medium mb-1">{game.name}</h3>
             <p className="text-sm text-gray-400 group-hover:text-purple-400 transition-colors">
-              {game.onlinePlayers.toLocaleString()} người chơi online
+              1276 người chơi online
             </p>
           </div>
         ))}
