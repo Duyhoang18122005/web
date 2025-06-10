@@ -1,0 +1,28 @@
+-- -- Insert games with roles
+-- INSERT INTO games (name, description, category, platform, status, image_url, has_roles) VALUES
+-- ('League of Legends', 'MOBA game by Riot Games', 'MOBA', 'PC', 'ACTIVE', 'lol.jpg', true),
+-- ('Dota 2', 'MOBA game by Valve', 'MOBA', 'PC', 'ACTIVE', 'dota2.jpg', true),
+-- ('Valorant', 'Tactical shooter by Riot Games', 'FPS', 'PC', 'ACTIVE', 'valorant.jpg', true);
+--
+-- -- Insert roles for League of Legends
+-- INSERT INTO game_roles (game_id, role) VALUES
+-- (1, 'Top'),
+-- (1, 'Jungle'),
+-- (1, 'Mid'),
+-- (1, 'ADC'),
+-- (1, 'Support');
+--
+-- -- Insert roles for Dota 2
+-- INSERT INTO game_roles (game_id, role) VALUES
+-- (2, 'Carry'),
+-- (2, 'Mid'),
+-- (2, 'Offlane'),
+-- (2, 'Support'),
+-- (2, 'Hard Support');
+--
+-- -- Insert roles for Valorant
+-- INSERT INTO game_roles (game_id, role) VALUES
+-- (3, 'Controller'),
+-- (3, 'Initiator'),
+-- (3, 'Sentinel'),
+-- (3, 'Duelist');
