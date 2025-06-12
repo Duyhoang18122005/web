@@ -1,52 +1,73 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
+import axios from '../api/axiosConfig';
 
-function LoginPage({ setUsername }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const LoginPage = () => {
+  const [form, setForm] = useState({ username: '', password: '' });
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const { login } = useUser();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (email && password) {
-      const mockUsername = "StreamQueen";
-      localStorage.setItem("token", "fake-token");
-      localStorage.setItem("username", mockUsername);
-      setUsername(mockUsername);
-      navigate("/");
+    try {
+      const res = await axios.post('/auth/login', form);
+      const { token, username } = res.data;
+      login(username); // ✅ gọi hàm login
+      localStorage.setItem('token', token);
+      navigate('/'); // ✅ chuyển về trang chủ
+    } catch (err) {
+      setMessage(err.response?.data || 'Đăng nhập thất bại');
     }
   };
-
+ 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-      <form
-        onSubmit={handleLogin}
-        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Đăng nhập</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-4 px-4 py-2 rounded bg-gray-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Mật khẩu"
-          className="w-full mb-6 px-4 py-2 rounded bg-gray-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded font-bold"
-        >
-          Đăng nhập
-        </button>
-      </form>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md text-white">
+        <h2 className="text-3xl font-extrabold text-center mb-6 text-white-400">Đăng nhập</h2>
+        <form onSubmit={handleLogin} className="space-y-5">
+          <div>
+            <label htmlFor="username" className="sr-only">Tên đăng nhập</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Tên đăng nhập"
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-200 placeholder-gray-400"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">Mật khẩu</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Mật khẩu"
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-200 placeholder-gray-400"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-purple-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300 ease-in-out"
+          >
+            Đăng nhập
+          </button>
+        </form>
+        {message && (
+          <p className="mt-6 text-center text-red-500 bg-red-900 bg-opacity-30 py-2 px-4 rounded-md">
+            {message}
+          </p>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default LoginPage;
