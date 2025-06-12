@@ -1,4 +1,3 @@
-// CallApiPlayer.js
 import axios from "axios";
 
 export const Getplayer = async (callback) => {
