@@ -267,4 +267,4 @@ const LoginPage = ({ setUsername }) => {
     );
 };
 
-export default LoginPage; 
+export default LoginPage;

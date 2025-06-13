@@ -1,4 +1,4 @@
-package com.example.backend.controller.game;
+package com.example.backend.controller;
 
 import com.example.backend.dto.GamePlayerStatusResponse;
 import com.example.backend.entity.GamePlayer;
@@ -14,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
-
+import java.util.Arrays;
 import com.example.backend.entity.Game;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.exception.ResourceNotFoundException;
@@ -103,37 +103,28 @@ public class GamePlayerController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PLAYER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('PLAYER')")
     @Operation(summary = "Create a new game player")
     public ResponseEntity<ApiResponse<GamePlayer>> createGamePlayer(
             @Valid @RequestBody GamePlayerRequest request) {
-        log.info("Creating game player with request: {}", request);
-        log.info("Game ID from request: {}", request.getGameId());
-        
-        // Kiểm tra user đã có player chưa
-        if (!gamePlayerService.getGamePlayersByUser(request.getUserId()).isEmpty()) {
-            log.warn("User {} already has a player registered", request.getUserId());
-            return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, "User đã đăng ký làm player rồi!", null));
-        }
-
-        User user = userService.findById(request.getUserId());
-        // Kiểm tra thông tin bắt buộc
-        if (user.getFullName() == null || user.getDateOfBirth() == null ||
-            user.getPhoneNumber() == null || user.getAddress() == null) {
-            log.warn("User {} has incomplete profile information", request.getUserId());
-            return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, "Bạn cần cập nhật đầy đủ thông tin cá nhân trước khi đăng ký làm player!", null));
-        }
-
         try {
+            // Kiểm tra user đã có player chưa
+            if (!gamePlayerService.getGamePlayersByUser(request.getUserId()).isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, "User đã đăng ký làm player rồi!", null));
+            }
+            User user = userService.findById(request.getUserId());
+            // Kiểm tra thông tin bắt buộc
+            if (user.getFullName() == null || user.getDateOfBirth() == null ||
+                user.getPhoneNumber() == null || user.getAddress() == null) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, "Bạn cần cập nhật đầy đủ thông tin cá nhân trước khi đăng ký làm player!", null));
+            }
             Game game = gameRepository.findById(request.getGameId())
                     .orElseThrow(() -> new ResourceNotFoundException("Game not found"));
-            log.info("Found game: {}", game);
 
             if (game.getHasRoles()) {
                 if (request.getRole() == null || request.getRole().trim().isEmpty()) {
-                    log.warn("Role is required for game {} but not provided", game.getName());
                     return ResponseEntity.badRequest()
                         .body(new ApiResponse<>(false, "Role is required for this game", null));
                 }
@@ -145,8 +136,7 @@ public class GamePlayerController {
                         .map(String::toUpperCase)
                         .anyMatch(role -> role.equals(normalizedRole));
                     if (!isValidRole) {
-                        log.warn("Invalid role {} for game {}", normalizedRole, game.getName());
-                        return ResponseEntity.badRequest()
+                    return ResponseEntity.badRequest()
                             .body(new ApiResponse<>(false, "Invalid role for this game. Available roles: " + 
                                 String.join(", ", game.getAvailableRoles()), null));
                     }
@@ -154,7 +144,6 @@ public class GamePlayerController {
                     request.setRole(normalizedRole);
                 }
             }
-
             // Tạo player từ thông tin user
             GamePlayer gamePlayer = gamePlayerService.createGamePlayer(
                 user.getId(),
@@ -166,16 +155,11 @@ public class GamePlayerController {
                 request.getPricePerHour(),
                 request.getDescription()
             );
-            log.info("Successfully created game player: {}", gamePlayer);
             return ResponseEntity.ok(new ApiResponse<>(true, "Game player created successfully", gamePlayer));
-        } catch (ResourceNotFoundException e) {
-            log.error("Error creating game player: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
-            log.error("Unexpected error creating game player", e);
-            return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, "Error creating game player: " + e.getMessage(), null));
+            log.error("Error when registering player", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(false, "Lỗi khi đăng ký player: " + e.getMessage(), null));
         }
     }
 
@@ -603,21 +587,16 @@ public class GamePlayerController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Games found", games));
     }
 
-    @GetMapping("/debug/games")
-    @Operation(summary = "Debug endpoint to check game data")
-    public ResponseEntity<ApiResponse<?>> debugGames() {
-        List<Game> games = gameRepository.findAll();
-        Map<String, Object> debugInfo = new HashMap<>();
-        debugInfo.put("totalGames", games.size());
-        debugInfo.put("games", games.stream().map(game -> {
-            Map<String, Object> gameInfo = new HashMap<>();
-            gameInfo.put("id", game.getId());
-            gameInfo.put("name", game.getName());
-            gameInfo.put("hasRoles", game.getHasRoles());
-            gameInfo.put("availableRoles", game.getAvailableRoles());
-            gameInfo.put("availableRanks", game.getAvailableRanks());
-            return gameInfo;
-        }).collect(Collectors.toList()));
-        return ResponseEntity.ok(new ApiResponse<>(true, "Debug info", debugInfo));
+    @GetMapping("/game/{gameId}/ranks")
+    @Operation(summary = "Get game ranks")
+    public ResponseEntity<ApiResponse<List<String>>> getGameRanks(@PathVariable Long gameId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResourceNotFoundException("Game not found"));
+        
+        List<String> ranks = new ArrayList<>();
+        if (game.getAvailableRanks() != null) {
+            ranks.addAll(game.getAvailableRanks());
+        }
+        return ResponseEntity.ok(new ApiResponse<>(true, "Ranks found", ranks));
     }
 } 

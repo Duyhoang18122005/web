@@ -119,7 +119,9 @@ export const loginUser = async (credentials) => {
                 roles: response.data.roles,
                 coin: response.data.coin
             }));
-
+            if (response.data.userId || response.data.id) {
+                localStorage.setItem('userId', response.data.userId || response.data.id);
+            }
             // Set default Authorization header for future requests
             api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
             

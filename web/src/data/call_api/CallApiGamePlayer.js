@@ -132,4 +132,15 @@ export const getGameRoles = async (gameId) => {
         console.error('Error fetching game roles:', error);
         return [];
     }
+};
+
+// Get game ranks
+export const getGameRanks = async (gameId) => {
+    try {
+        const response = await api.get(`/game-players/game/${gameId}/ranks`);
+        return response.data?.data || [];
+    } catch (error) {
+        console.error('Error fetching game ranks:', error);
+        return [];
+    }
 }; 

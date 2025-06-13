@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getAllGames, getGameRoles } from '../data/call_api/CallApiGame';
-import { registerGamePlayer } from '../data/call_api/CallApiGamePlayer';
+import { registerGamePlayer, getGameRanks } from '../data/call_api/CallApiGamePlayer';
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useState('profile');
     const [games, setGames] = useState([]);
     const [availableRoles, setAvailableRoles] = useState([]);
+    const [availableRanks, setAvailableRanks] = useState([]);
     const [formData, setFormData] = useState({
         userId: localStorage.getItem('userId') || '',
         gameId: '',
@@ -37,28 +38,32 @@ const Settings = () => {
         fetchGames();
     }, []);
 
-    // Fetch roles when game is selected
+    // Fetch roles and ranks when game is selected
     useEffect(() => {
-        const fetchRoles = async () => {
-            if (formData.gameId) {
-                try {
-                    setLoading(true);
-                    console.log('Fetching roles for game ID:', formData.gameId);
-                    const roles = await getGameRoles(formData.gameId);
-                    console.log('Fetched roles:', roles);
-                    setAvailableRoles(roles);
-                } catch (err) {
-                    setError('Failed to load roles');
-                    console.error('Error fetching roles:', err);
-                    setAvailableRoles([]);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setAvailableRoles([]); // Reset roles when no game is selected
+        const fetchGameData = async () => {
+            if (!formData.gameId) {
+                setAvailableRoles([]);
+                setAvailableRanks([]);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                const [rolesData, ranksData] = await Promise.all([
+                    getGameRoles(formData.gameId),
+                    getGameRanks(formData.gameId)
+                ]);
+                setAvailableRoles(rolesData || []);
+                setAvailableRanks(ranksData || []);
+            } catch (err) {
+                setError('Failed to load game data');
+                console.error('Error fetching game data:', err);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchRoles();
+
+        fetchGameData();
     }, [formData.gameId]);
 
     const handleInputChange = (e) => {
@@ -99,13 +104,20 @@ const Settings = () => {
         }
 
         try {
-            // Create the request data with processed usernames
+            // Normalize the data
             const requestData = {
                 ...formData,
-                username: usernames.join(', ') // Join usernames with comma and space
+                userId: Number(formData.userId),
+                gameId: Number(formData.gameId),
+                pricePerHour: Number(formData.pricePerHour),
+                username: usernames.join(', '),
+                server: formData.server.toUpperCase(),
+                rank: formData.rank.toUpperCase(),
+                role: formData.role.toUpperCase()
             };
 
-            const response = await registerGamePlayer(requestData);
+            console.log('Sending request data:', requestData);
+            await registerGamePlayer(requestData);
             // Show success message
             alert('Đăng ký thành công!');
             // Reset form
@@ -120,7 +132,12 @@ const Settings = () => {
                 description: ''
             });
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to register as player');
+            setError(
+                err.response?.data?.message ||
+                err.response?.data?.data?.message ||
+                err.message ||
+                'Failed to register as player'
+            );
             console.error('Error registering player:', err);
         } finally {
             setLoading(false);
@@ -182,86 +199,66 @@ const Settings = () => {
                                         </select>
                                     </div>
 
-                                    {/* Server Selection */}
-                                    <div>
-                                        <label className="block mb-2">Server</label>
-                                        <select
-                                            name="server"
-                                            value={formData.server}
-                                            onChange={handleInputChange}
-                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
-                                            required
-                                            disabled={loading}
-                                        >
-                                            <option value="">Chọn server</option>
-                                            <option value="VN">Việt Nam</option>
-                                            <option value="NA">North America</option>
-                                            <option value="EUW">Europe West</option>
-                                            <option value="KR">Korea</option>
-                                            <option value="JP">Japan</option>
-                                        </select>
-                                    </div>
-
                                     {/* Rank Selection */}
                                     <div>
-                                        <label className="block mb-2">Rank hiện tại</label>
+                                        <label className="block mb-2">Rank trong game</label>
                                         <select
                                             name="rank"
                                             value={formData.rank}
                                             onChange={handleInputChange}
                                             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
                                             required
-                                            disabled={loading}
+                                            disabled={loading || !formData.gameId}
                                         >
                                             <option value="">Chọn rank</option>
-                                            <option value="IRON">Sắt</option>
-                                            <option value="BRONZE">Đồng</option>
-                                            <option value="SILVER">Bạc</option>
-                                            <option value="GOLD">Vàng</option>
-                                            <option value="PLATINUM">Bạch Kim</option>
-                                            <option value="DIAMOND">Kim Cương</option>
-                                            <option value="MASTER">Cao Thủ</option>
-                                            <option value="GRANDMASTER">Đại Cao Thủ</option>
-                                            <option value="CHALLENGER">Thách Đấu</option>
+                                            {availableRanks.map(rank => (
+                                                <option key={rank} value={rank}>
+                                                    {rank}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 
-                                    {/* Role Selection */}
-                                    <div>
-                                        <label className="block mb-2">Vị trí/Role chính</label>
-                                        {loading ? (
-                                            <div className="text-gray-400">Đang tải roles...</div>
-                                        ) : availableRoles && availableRoles.length > 0 ? (
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {/* Role Selection (if game has roles) */}
+                                    {availableRoles.length > 0 && (
+                                        <div>
+                                            <label className="block mb-2">Vai trò trong game</label>
+                                            <select
+                                                name="role"
+                                                value={formData.role}
+                                                onChange={handleInputChange}
+                                                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                                                required
+                                                disabled={loading}
+                                            >
+                                                <option value="">Chọn vai trò</option>
                                                 {availableRoles.map(role => (
-                                                    <label
-                                                        key={role}
-                                                        className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer ${
-                                                            formData.role === role
-                                                                ? 'bg-purple-600'
-                                                                : 'bg-gray-800 hover:bg-gray-700'
-                                                        }`}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="role"
-                                                            value={role}
-                                                            checked={formData.role === role}
-                                                            onChange={handleInputChange}
-                                                            className="form-radio text-purple-600"
-                                                        />
-                                                        <span>{role}</span>
-                                                    </label>
+                                                    <option key={role} value={role}>
+                                                        {role}
+                                                    </option>
                                                 ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-gray-400">Game này không yêu cầu chọn role</div>
-                                        )}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {/* Server Input */}
+                                    <div>
+                                        <label className="block mb-2">Server</label>
+                                        <input
+                                            type="text"
+                                            name="server"
+                                            value={formData.server}
+                                            onChange={handleInputChange}
+                                            placeholder="Nhập server (ví dụ: NA, EU, Garena)"
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                                            required
+                                            disabled={loading}
+                                        />
                                     </div>
 
                                     {/* Username */}
                                     <div>
-                                        <label className="block mb-2">Tên nhân vật trong game</label>
+                                        <label className="block mb-2">Tên tài khoản</label>
                                         <input
                                             type="text"
                                             name="username"
