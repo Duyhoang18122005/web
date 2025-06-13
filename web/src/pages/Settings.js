@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAllGames, getGameRoles } from '../data/call_api/CallApiGame';
 import { registerGamePlayer, getGameRanks } from '../data/call_api/CallApiGamePlayer';
+import { updateUserProfile, getCurrentUser } from '../data/call_api/CallApiLoginRegister';
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -19,6 +20,17 @@ const Settings = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [profile, setProfile] = useState({
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        address: '',
+        gender: '',
+        dateOfBirth: ''
+    });
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [profileError, setProfileError] = useState('');
+    const [profileSuccess, setProfileSuccess] = useState('');
 
     // Fetch games when component mounts
     useEffect(() => {
@@ -65,6 +77,23 @@ const Settings = () => {
 
         fetchGameData();
     }, [formData.gameId]);
+
+    // Lấy thông tin user khi vào tab Hồ sơ
+    useEffect(() => {
+        if (activeTab === 'profile') {
+            const user = getCurrentUser();
+            if (user) {
+                setProfile({
+                    fullName: user.fullName || '',
+                    email: user.email || '',
+                    phoneNumber: user.phoneNumber || '',
+                    address: user.address || '',
+                    gender: user.gender || '',
+                    dateOfBirth: user.dateOfBirth || ''
+                });
+            }
+        }
+    }, [activeTab]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -141,6 +170,33 @@ const Settings = () => {
             console.error('Error registering player:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleProfileChange = (e) => {
+        const { name, value } = e.target;
+        setProfile(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+        setProfileLoading(true);
+        setProfileError('');
+        setProfileSuccess('');
+        try {
+            await updateUserProfile({
+                fullName: profile.fullName,
+                email: profile.email,
+                phoneNumber: profile.phoneNumber,
+                address: profile.address,
+                gender: profile.gender,
+                dateOfBirth: profile.dateOfBirth
+            });
+            setProfileSuccess('Cập nhật hồ sơ thành công!');
+        } catch (err) {
+            setProfileError(err.message || 'Cập nhật hồ sơ thất bại');
+        } finally {
+            setProfileLoading(false);
         }
     };
 
@@ -318,9 +374,44 @@ const Settings = () => {
                         )}
 
                         {activeTab === 'profile' && (
-                            <div>
-                                <h2 className="text-xl font-semibold mb-4">Hồ sơ</h2>
-                                {/* Add profile content here */}
+                            <div className="max-w-lg mx-auto bg-gray-800 rounded-lg p-6 shadow">
+                                <h2 className="text-xl font-semibold mb-4">Cập nhật hồ sơ</h2>
+                                {profileError && <div className="bg-red-500 text-white p-3 rounded-lg mb-4">{profileError}</div>}
+                                {profileSuccess && <div className="bg-green-500 text-white p-3 rounded-lg mb-4">{profileSuccess}</div>}
+                                <form onSubmit={handleProfileSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="block mb-1">Họ và tên</label>
+                                        <input type="text" name="fullName" value={profile.fullName} onChange={handleProfileChange} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" required disabled={profileLoading} />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1">Email</label>
+                                        <input type="email" name="email" value={profile.email} onChange={handleProfileChange} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" required disabled={profileLoading} />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1">Số điện thoại</label>
+                                        <input type="tel" name="phoneNumber" value={profile.phoneNumber} onChange={handleProfileChange} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" disabled={profileLoading} />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1">Địa chỉ</label>
+                                        <input type="text" name="address" value={profile.address} onChange={handleProfileChange} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" disabled={profileLoading} />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1">Giới tính</label>
+                                        <select name="gender" value={profile.gender} onChange={handleProfileChange} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" disabled={profileLoading}>
+                                            <option value="">Chọn giới tính</option>
+                                            <option value="MALE">Nam</option>
+                                            <option value="FEMALE">Nữ</option>
+                                            <option value="OTHER">Khác</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1">Ngày sinh</label>
+                                        <input type="date" name="dateOfBirth" value={profile.dateOfBirth} onChange={handleProfileChange} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" disabled={profileLoading} />
+                                    </div>
+                                    <button type="submit" className={`w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg ${profileLoading ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={profileLoading}>
+                                        {profileLoading ? 'Đang cập nhật...' : 'Cập nhật hồ sơ'}
+                                    </button>
+                                </form>
                             </div>
                         )}
                     </div>

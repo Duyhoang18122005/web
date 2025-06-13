@@ -246,6 +246,18 @@ export const validateSession = async () => {
     return true;
 };
 
+export const updateUserProfile = async (profileData) => {
+    try {
+        const response = await api.put('/update', profileData);
+        return response.data;
+    } catch (error) {
+        if (error.response?.data) {
+            throw new Error(error.response.data);
+        }
+        throw error;
+    }
+};
+
 const Login = ({ setUsername }) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({

@@ -10,10 +10,7 @@ const RegisterPage = () => {
         password: '',
         confirmPassword: '',
         email: '',
-        name: '',
-        phoneNumber: '',
-        address: '',
-        gender: ''
+        name: ''
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -125,18 +122,6 @@ const RegisterPage = () => {
         // Name validation
         if (!formData.name.trim()) {
             tempErrors.name = 'Họ tên không được để trống';
-            isValid = false;
-        }
-
-        // Phone number validation (optional)
-        if (formData.phoneNumber && !/^\d{10}$/.test(formData.phoneNumber)) {
-            tempErrors.phoneNumber = 'Số điện thoại phải có 10 chữ số';
-            isValid = false;
-        }
-
-        // Gender validation (optional)
-        if (formData.gender && !['MALE', 'FEMALE', 'OTHER'].includes(formData.gender)) {
-            tempErrors.gender = 'Giới tính không hợp lệ';
             isValid = false;
         }
 
@@ -299,76 +284,12 @@ const RegisterPage = () => {
                             )}
                         </div>
 
-                        <div>
-                            <input
-                                type="tel"
-                                name="phoneNumber"
-                                placeholder="Số điện thoại (tùy chọn)"
-                                className={`w-full px-4 py-3 bg-gray-800/50 border ${
-                                    errors.phoneNumber ? 'border-red-500' : 'border-gray-700'
-                                } rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-200 text-gray-100 placeholder-gray-500`}
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                disabled={isLoading}
-                            />
-                            {errors.phoneNumber && (
-                                <p className="mt-1 text-sm text-red-400">{errors.phoneNumber}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <input
-                                type="text"
-                                name="address"
-                                placeholder="Địa chỉ (tùy chọn)"
-                                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-200 text-gray-100 placeholder-gray-500"
-                                value={formData.address}
-                                onChange={handleChange}
-                                disabled={isLoading}
-                            />
-                        </div>
-
-                        <div>
-                            <select
-                                name="gender"
-                                className={`w-full px-4 py-3 bg-gray-800/50 border ${
-                                    errors.gender ? 'border-red-500' : 'border-gray-700'
-                                } rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-200 text-gray-100`}
-                                value={formData.gender}
-                                onChange={handleChange}
-                                disabled={isLoading}
-                            >
-                                <option value="">Chọn giới tính (tùy chọn)</option>
-                                <option value="MALE">Nam</option>
-                                <option value="FEMALE">Nữ</option>
-                                <option value="OTHER">Khác</option>
-                            </select>
-                            {errors.gender && (
-                                <p className="mt-1 text-sm text-red-400">{errors.gender}</p>
-                            )}
-                        </div>
-
                         <button
                             type="submit"
-                            className={`w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium rounded-lg 
-                                ${!isLoading && 'hover:from-purple-600 hover:to-blue-600'} 
-                                focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 
-                                focus:ring-offset-gray-900 transition-all duration-200 transform 
-                                ${!isLoading && 'hover:scale-[1.02]'}
-                                ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                            className={`w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             disabled={isLoading}
                         >
-                            {isLoading ? (
-                                <div className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Đang đăng ký...
-                                </div>
-                            ) : (
-                                'Đăng Ký'
-                            )}
+                            {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
                         </button>
 
                         <div className="mt-6 text-center text-gray-400">

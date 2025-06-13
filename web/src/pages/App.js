@@ -8,6 +8,8 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import Profile from "../components/Profiles/Profile";
 import Settings from "../pages/Settings";
+import ForgotPasswordPage from './ForgotPasswordPage';
+import ResetPasswordPage from './ResetPasswordPage';
 
 function App() {
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
@@ -33,6 +35,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile/:gamerId" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Routes>
     </div>
   );

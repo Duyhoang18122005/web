@@ -425,12 +425,13 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
         String email = request.get("email");
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body("Email is required");
+        boolean found = passwordResetService.createAndSendResetToken(username, email);
+        if (!found) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Bạn đã nhập sai tên đăng nhập hoặc email"));
         }
-        passwordResetService.createAndSendResetToken(email);
-        return ResponseEntity.ok(Map.of("message", "Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi."));
+        return ResponseEntity.ok().body(Map.of("message", "Nếu tài khoản tồn tại, một email đặt lại mật khẩu sẽ được gửi đến địa chỉ email của bạn."));
     }
 
     @PostMapping("/reset-password")
