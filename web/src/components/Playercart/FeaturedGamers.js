@@ -29,7 +29,7 @@ const FeaturedGamers = () => {
         {gamers.map((gamer) => {
           const name = gamer.username || "chim sẻ đi nắng";
           const gameName = gamer.game?.name || "League of Legends mobi";
-          const price = `${gamer.pricePerHour || 150000} VND`;
+          const price = `${gamer.pricePerHour || 150000} COIN`;
 
           return (
             <Col
