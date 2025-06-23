@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 function Header({ isLoggedIn, username, avatarUrl, onLogout }) {
@@ -71,21 +71,21 @@ function Header({ isLoggedIn, username, avatarUrl, onLogout }) {
           <Link to="/">Trang chủ</Link>
           <Link to="#">Game</Link>
           <Link to="#">Streamer</Link>
-          <Link to="#">Nạp tiền</Link>
+          <Link to="/payment">Nạp tiền</Link>
         </nav>
 
-         <div className="hidden md:block w-1/3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Tìm game thủ, streamer..."
-                className="w-full bg-gray-700 text-white px-4 py-2 rounded-full border-none focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
+        <div className="hidden md:block w-1/3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Tìm game thủ, streamer..."
+              className="w-full bg-gray-700 text-white px-4 py-2 rounded-full border-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+              <i className="fas fa-search"></i>
+            </button>
           </div>
+        </div>
 
         <div
           className="relative flex items-center space-x-4"
@@ -113,7 +113,7 @@ function Header({ isLoggedIn, username, avatarUrl, onLogout }) {
               {/* Notification Bell */}
               <button
                 className="relative p-2 text-gray-400 hover:text-white focus:outline-none"
-                onClick={() => {/* Handle notification click */}}
+                onClick={() => {/* Handle notification click */ }}
               >
                 <i className="fas fa-bell text-xl"></i>
                 <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
@@ -151,10 +151,9 @@ function Header({ isLoggedIn, username, avatarUrl, onLogout }) {
                 <div
                   className={`absolute right-0 mt-2 w-64 bg-[#1A1D24] text-gray-200 rounded-lg shadow-xl overflow-hidden z-[9999]
                     origin-top-right transform transition-all duration-200 ease-out
-                    ${
-                      dropdownOpen
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 -translate-y-2 pointer-events-none"
+                    ${dropdownOpen
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 -translate-y-2 pointer-events-none"
                     }
                   `}
                   style={{ top: "100%" }}

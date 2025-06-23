@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getAllGames, getGameRoles } from '../data/call_api/CallApiGame';
-import { registerGamePlayer, getGameRanks } from '../data/call_api/CallApiGamePlayer';
-import { updateUserProfile, getCurrentUser } from '../data/call_api/CallApiLoginRegister';
+import { getGameRanks, registerGamePlayer } from '../data/call_api/CallApiGamePlayer';
+import { getCurrentUser, updateUserProfile } from '../data/call_api/CallApiLoginRegister';
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -208,17 +208,15 @@ const Settings = () => {
                     <div className="w-full md:w-64 space-y-2">
                         <button
                             onClick={() => setActiveTab('profile')}
-                            className={`w-full text-left px-4 py-2 rounded-lg ${
-                                activeTab === 'profile' ? 'bg-purple-600' : 'hover:bg-gray-800'
-                            }`}
+                            className={`w-full text-left px-4 py-2 rounded-lg ${activeTab === 'profile' ? 'bg-purple-600' : 'hover:bg-gray-800'
+                                }`}
                         >
                             Hồ sơ
                         </button>
                         <button
                             onClick={() => setActiveTab('player-registration')}
-                            className={`w-full text-left px-4 py-2 rounded-lg ${
-                                activeTab === 'player-registration' ? 'bg-purple-600' : 'hover:bg-gray-800'
-                            }`}
+                            className={`w-full text-left px-4 py-2 rounded-lg ${activeTab === 'player-registration' ? 'bg-purple-600' : 'hover:bg-gray-800'
+                                }`}
                         >
                             Đăng ký làm Player
                         </button>
@@ -276,26 +274,26 @@ const Settings = () => {
                                     </div>
 
                                     {/* Role Selection (if game has roles) */}
-                                    {availableRoles.length > 0 && (
-                                        <div>
-                                            <label className="block mb-2">Vai trò trong game</label>
-                                            <select
-                                                name="role"
-                                                value={formData.role}
-                                                onChange={handleInputChange}
-                                                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
-                                                required
-                                                disabled={loading}
-                                            >
-                                                <option value="">Chọn vai trò</option>
-                                                {availableRoles.map(role => (
-                                                    <option key={role} value={role}>
-                                                        {role}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
+
+                                    <div>
+                                        <label className="block mb-2">Vai trò trong game</label>
+                                        <select
+                                            name="role"
+                                            value={formData.role}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                                            required
+                                            disabled={loading || !formData.gameId}
+                                        >
+                                            <option value="">Chọn vai trò</option>
+                                            {availableRoles.map(role => (
+                                                <option key={role} value={role}>
+                                                    {role}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
 
                                     {/* Server Input */}
                                     <div>
@@ -362,9 +360,8 @@ const Settings = () => {
 
                                     <button
                                         type="submit"
-                                        className={`w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg ${
-                                            loading ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
+                                        className={`w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
                                         disabled={loading}
                                     >
                                         {loading ? 'Đang xử lý...' : 'Đăng ký làm Player'}

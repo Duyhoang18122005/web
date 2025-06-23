@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../data/call_api/CallApiLoginRegister';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const LoginPage = ({ setUsername }) => {
     const navigate = useNavigate();
@@ -76,13 +77,18 @@ const LoginPage = ({ setUsername }) => {
                     username: formData.username,
                     password: formData.password
                 });
-                
+
                 if (response.username) {
                     // Handle "Remember me"
                     if (formData.rememberMe) {
                         localStorage.setItem('rememberedUsername', formData.username);
                     } else {
                         localStorage.removeItem('rememberedUsername');
+                    }
+
+                    // Save token to cookie
+                    if (response.token) {
+                        Cookies.set('token', response.token, { expires: 7 }); // expires in 7 days
                     }
 
                     setUsername(response.username);
@@ -92,7 +98,7 @@ const LoginPage = ({ setUsername }) => {
             } catch (error) {
                 setLoginAttempts(prev => prev + 1);
                 setApiError(
-                    loginAttempts >= 2 
+                    loginAttempts >= 2
                         ? 'Nhiều lần đăng nhập thất bại. Bạn có thể thử lại sau hoặc đặt lại mật khẩu.'
                         : error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'
                 );
@@ -107,7 +113,7 @@ const LoginPage = ({ setUsername }) => {
             <div className="relative w-full max-w-md p-8 transform hover:scale-[1.01] transition-all duration-300">
                 {/* Background Decoration */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600/30 to-blue-600/30 rounded-lg blur"></div>
-                
+
                 {/* Main Content */}
                 <div className="relative bg-gray-900 rounded-lg shadow-xl border border-gray-800 p-8">
                     <div className="mb-8 text-center">
@@ -138,9 +144,8 @@ const LoginPage = ({ setUsername }) => {
                                     name="username"
                                     type="text"
                                     required
-                                    className={`w-full px-4 py-3 bg-gray-800/50 border ${
-                                        errors.username ? 'border-red-500' : 'border-gray-700'
-                                    } rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-200 text-gray-100 placeholder-gray-500`}
+                                    className={`w-full px-4 py-3 bg-gray-800/50 border ${errors.username ? 'border-red-500' : 'border-gray-700'
+                                        } rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-200 text-gray-100 placeholder-gray-500`}
                                     placeholder="Tên đăng nhập"
                                     value={formData.username}
                                     onChange={handleChange}
@@ -243,7 +248,7 @@ const LoginPage = ({ setUsername }) => {
                         </div>
 
                         <div className="mt-6 grid grid-cols-2 gap-3">
-                            <button 
+                            <button
                                 className="flex items-center justify-center px-4 py-2 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors"
                                 disabled={isLoading}
                                 onClick={() => alert('Tính năng đang được phát triển')}
@@ -251,7 +256,7 @@ const LoginPage = ({ setUsername }) => {
                                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" />
                                 <span className="text-sm text-gray-300">Google</span>
                             </button>
-                            <button 
+                            <button
                                 className="flex items-center justify-center px-4 py-2 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors"
                                 disabled={isLoading}
                                 onClick={() => alert('Tính năng đang được phát triển')}

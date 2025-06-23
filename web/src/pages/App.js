@@ -1,15 +1,17 @@
-import React, { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import { Route, Routes } from "react-router-dom";
 import Header from "../components/Layout/Header";
-import HomePage from "../pages/HomePage";
+import Profile from "../components/Profiles/Profile";
 import BookingPage from "../pages/BookingPage";
 import BookingSuccess from "../pages/BookingSuccess";
+import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
-import Profile from "../components/Profiles/Profile";
 import Settings from "../pages/Settings";
 import ForgotPasswordPage from './ForgotPasswordPage';
+import Payment from './Payment.jsx';
 import ResetPasswordPage from './ResetPasswordPage';
+
 
 function App() {
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
@@ -37,6 +39,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/payment" element={<Payment />} />
       </Routes>
     </div>
   );
