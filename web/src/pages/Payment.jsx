@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import TransactionHistory from "../components/TransactionHistory";
-import { getTopupHistory } from "../data/call_api/CallApiTopupHistory";
+import {
+  getTopupHistory,
+  topupCoin,
+} from "../data/call_api/CallApiTopupHistory";
 
 const Payment = () => {
   const [activeTab, setActiveTab] = useState("topup");
@@ -37,10 +40,16 @@ const Payment = () => {
     setShowPaymentConfirm(true);
   };
 
-  const confirmPayment = () => {
+  const confirmPayment = async () => {
     setShowPaymentConfirm(false);
     setShowProcessing(true);
-    setTimeout(() => {
+    try {
+      // Lấy số coin từ gói đã chọn
+      const selectedPkg = paymentPackages.find(
+        (pkg) => pkg.id === selectedPackage
+      );
+      const coinValue = parseInt(selectedPkg.amount.replace(/,/g, ""));
+      await topupCoin(coinValue);
       setShowProcessing(false);
       setShowSuccess(true);
       setTimeout(() => {
@@ -48,7 +57,10 @@ const Payment = () => {
         // Refresh transaction history after successful payment
         fetchTransactionHistory();
       }, 3000);
-    }, 2000);
+    } catch (error) {
+      setShowProcessing(false);
+      alert("Nạp xu thất bại. Vui lòng thử lại!");
+    }
   };
 
   // Dynamic payment packages - can be fetched from API in the future
@@ -164,6 +176,12 @@ const Payment = () => {
         return "from-blue-500 to-indigo-600";
     }
   };
+
+  // Tính tổng số coin đã nạp thành công
+  const totalCoin = transactionHistory
+    .filter((t) => t.status === "success")
+    .reduce((sum, t) => sum + (parseInt(t.coin, 10) || 0), 0);
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -195,7 +213,9 @@ const Payment = () => {
                   </div>
                 </div>
                 <div className="flex items-baseline mb-4">
-                  <span className="text-white text-3xl font-bold">250</span>
+                  <span className="text-white text-3xl font-bold">
+                    {totalCoin}
+                  </span>
                   <span className="text-white text-opacity-90 ml-2">xu</span>
                 </div>
                 <div className="bg-white bg-opacity-10 rounded-lg p-3 mb-4">
@@ -1101,6 +1121,51 @@ const Payment = () => {
           </div>
         </div>
       </footer>
+
+      {/* Modal xác nhận thanh toán */}
+      {showPaymentConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Xác nhận thanh toán</h3>
+            <p>Bạn có chắc chắn muốn nạp gói này không?</p>
+            <div className="flex justify-end mt-6 space-x-2">
+              <button
+                onClick={() => setShowPaymentConfirm(false)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmPayment}
+                className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal đang xử lý */}
+      {showProcessing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-8 flex flex-col items-center">
+            <i className="fas fa-spinner fa-spin text-3xl text-indigo-600 mb-4"></i>
+            <p className="text-lg font-medium">Đang xử lý thanh toán...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal thành công */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-8 flex flex-col items-center">
+            <i className="fas fa-check-circle text-4xl text-green-500 mb-4"></i>
+            <p className="text-lg font-bold mb-2">Nạp xu thành công!</p>
+            <p className="text-gray-600">Cảm ơn bạn đã sử dụng dịch vụ.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
