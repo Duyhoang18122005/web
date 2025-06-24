@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TransactionHistory from "../components/TransactionHistory";
+import { getCurrentUser } from "../data/call_api/CallApiLoginRegister";
 import {
   getTopupHistory,
   topupCoin,
@@ -18,6 +20,8 @@ const Payment = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(getCurrentUser());
 
   // Fetch transaction history when component mounts
   useEffect(() => {
@@ -37,6 +41,11 @@ const Payment = () => {
   };
 
   const handlePayment = () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập tài khoản");
+      setTimeout(() => navigate("/login"), 100);
+      return;
+    }
     setShowPaymentConfirm(true);
   };
 
