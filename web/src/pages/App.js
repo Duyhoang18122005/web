@@ -11,6 +11,7 @@ import Settings from "../pages/Settings";
 import ForgotPasswordPage from './ForgotPasswordPage';
 import Payment from './Payment.jsx';
 import ResetPasswordPage from './ResetPasswordPage';
+import AdminDashboard from "./admin/AdminDashboard.js";
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/dashbord" element={<AdminDashboard />} />
       </Routes>
     </div>
   );

@@ -13,3 +13,16 @@ export const Getplayer = async (callback) => {
         callback(error.message || "Lỗi kết nối đến máy chủ", []);
     }
 };
+
+// Lấy tổng số người dùng
+export async function fetchUserCount() {
+    try {
+        const response = await fetch('http://localhost:8080/api/users/count');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching user count:', error);
+        return null;
+    }
+}
