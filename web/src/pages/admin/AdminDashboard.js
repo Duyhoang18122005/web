@@ -1,6 +1,9 @@
 import * as echarts from 'echarts';
 import { useEffect, useState } from 'react';
+import { fetchOrderGrowthPercentYesterday, fetchRevenueGrowthPercentYesterday } from '../../data/call_api/CallApiOder';
 import { fetchUserCount } from '../../data/call_api/CallApiPlayer';
+import { fetchOrderCount, fetchTodayRevenue } from '../../data/call_api/CallApiTopupHistory';
+import { fetchUserGrowthPercent } from '../../data/call_api/CallApiUser';
 
 const AdminDashboard = () => { // Removed : React.FC
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -15,6 +18,11 @@ const AdminDashboard = () => { // Removed : React.FC
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // Removed : number | null
   const [userCount, setUserCount] = useState(null);
+  const [orderCount, setOrderCount] = useState(null);
+  const [revenue, setRevenue] = useState(null);
+  const [userGrowthPercent, setUserGrowthPercent] = useState(null);
+  const [orderGrowthPercent, setOrderGrowthPercent] = useState(null);
+  const [revenueGrowthPercent, setRevenueGrowthPercent] = useState(null);
 
   // Mẫu dữ liệu người dùng
   const users = [
@@ -34,6 +42,56 @@ const AdminDashboard = () => { // Removed : React.FC
       if (typeof data === 'number') setUserCount(data);
       else if (data && typeof data.count === 'number') setUserCount(data.count);
     });
+  }, []);
+
+  // Lấy tổng số đơn từ BE
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchOrderCount(token).then((data) => {
+        if (typeof data === 'number') setOrderCount(data);
+        else if (data && typeof data.count === 'number') setOrderCount(data.count);
+      });
+    }
+  }, []);
+
+  // Lấy tổng doanh thu từ BE
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchTodayRevenue(token).then((data) => {
+        if (typeof data === 'number') setRevenue(data);
+        else if (data && typeof data.revenue === 'number') setRevenue(data.revenue);
+      });
+    }
+  }, []);
+
+  // Lấy % tăng trưởng người dùng so với tuần trước
+  useEffect(() => {
+    fetchUserGrowthPercent().then((data) => {
+      if (data && typeof data.percent === 'number') setUserGrowthPercent(data.percent);
+    });
+  }, []);
+
+  // Lấy % tăng trưởng đơn so với hôm qua
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchOrderGrowthPercentYesterday(token).then((data) => {
+        if (typeof data === 'number') setOrderGrowthPercent(data);
+        else if (data && typeof data.percent === 'number') setOrderGrowthPercent(data.percent);
+      });
+    }
+  }, []);
+
+  // Lấy % tăng trưởng doanh thu so với hôm qua
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchRevenueGrowthPercentYesterday(token).then((data) => {
+        if (typeof data === 'number') setRevenueGrowthPercent(data);
+      });
+    }
   }, []);
 
   // Khởi tạo biểu đồ
@@ -361,7 +419,7 @@ const AdminDashboard = () => { // Removed : React.FC
                   <p className="text-sm text-gray-500 dark:text-gray-400">Tổng người dùng</p>
                   <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{userCount !== null ? userCount : '...'}</h3>
                   <p className="text-sm mt-2 flex items-center text-green-600">
-                    <i className="fas fa-arrow-up mr-1"></i> 12% <span className="text-gray-500 ml-1 dark:text-gray-400">so với tuần trước</span>
+                    <i className="fas fa-arrow-up mr-1"></i> {userGrowthPercent !== null ? `${userGrowthPercent}%` : '...'} <span className="text-gray-500 ml-1 dark:text-gray-400">so với tuần trước</span>
                   </p>
                 </div>
                 <div className="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-700 dark:text-blue-100">
@@ -374,9 +432,9 @@ const AdminDashboard = () => { // Removed : React.FC
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Tổng số đơn</p>
-                  <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>180</h3>
+                  <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{orderCount !== null ? orderCount : '...'}</h3>
                   <p className="text-sm mt-2 flex items-center text-green-600">
-                    <i className="fas fa-arrow-up mr-1"></i> 8% <span className="text-gray-500 ml-1 dark:text-gray-400">so với hôm qua</span>
+                    <i className="fas fa-arrow-up mr-1"></i> {orderGrowthPercent !== null ? `${orderGrowthPercent}%` : '...'} <span className="text-gray-500 ml-1 dark:text-gray-400">so với hôm qua</span>
                   </p>
                 </div>
                 <div className="p-3 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-100">
@@ -388,10 +446,10 @@ const AdminDashboard = () => { // Removed : React.FC
             <div className={`p-6 rounded-xl shadow-md ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Doanh thu hôm nay</p>
-                  <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>8,200,000đ</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
+                  <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{revenue !== null ? revenue.toLocaleString('vi-VN') + 'đ' : '...'}</h3>
                   <p className="text-sm mt-2 flex items-center text-green-600">
-                    <i className="fas fa-arrow-up mr-1"></i> 9.3% <span className="text-gray-500 ml-1 dark:text-gray-400">so với hôm qua</span>
+                    <i className="fas fa-arrow-up mr-1"></i> {revenueGrowthPercent !== null ? `${revenueGrowthPercent}%` : '...'} <span className="text-gray-500 ml-1 dark:text-gray-400">so với hôm qua</span>
                   </p>
                 </div>
                 <div className="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-700 dark:text-green-100">

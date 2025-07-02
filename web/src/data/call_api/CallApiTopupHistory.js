@@ -44,4 +44,37 @@ export const topupCoin = async (coin) => {
         throw error;
     }
 };
+// Lấy tổng số đơn
+export async function fetchOrderCount(token) {
+    try {
+        const response = await fetch('http://localhost:8080/api/orders/count', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching order count:', error);
+        return null;
+    }
+}
+
+// Lấy tổng doanh thu 
+export async function fetchTodayRevenue(token) {
+    try {
+        const response = await fetch('http://localhost:8080/api/game-players/revenue/total', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching today\'s revenue:', error);
+        return null;
+    }
+}
 
